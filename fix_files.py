@@ -1,0 +1,349 @@
+# -*- coding: utf-8 -*-
+import os
+
+# HorizontalPipe.xaml
+horizontal_pipe_xaml = '''<UserControl x:Class="Platform_Control.Controls.Pipeline.HorizontalPipe"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             MinWidth="100" MinHeight="30"
+             ClipToBounds="True">
+    <UserControl.Resources>
+        <LinearGradientBrush x:Key="PipeOuterBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0" Color="#5A5A5E"/>
+            <GradientStop Offset="0.3" Color="#4A4A4E"/>
+            <GradientStop Offset="0.7" Color="#3A3A3E"/>
+            <GradientStop Offset="1" Color="#2A2A2E"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="PipeInnerBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0" Color="#1A1A2E"/>
+            <GradientStop Offset="0.5" Color="#16213E"/>
+            <GradientStop Offset="1" Color="#0F3460"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="WaterFlowBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Offset="0" Color="#00D4FF"/>
+            <GradientStop Offset="0.25" Color="#0099FF"/>
+            <GradientStop Offset="0.5" Color="#00D4FF"/>
+            <GradientStop Offset="0.75" Color="#0066CC"/>
+            <GradientStop Offset="1" Color="#00D4FF"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlossBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0" Color="#FFFFFF"/>
+            <GradientStop Offset="0.4" Color="#FFFFFF"/>
+            <GradientStop Offset="0.5" Color="Transparent"/>
+            <GradientStop Offset="1" Color="Transparent"/>
+        </LinearGradientBrush>
+        <DropShadowEffect x:Key="GlowEffect" Color="#00D4FF" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+        <Storyboard x:Key="FlowAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="FlowPatternTransform"
+                           Storyboard.TargetProperty="X"
+                           From="0" To="60" Duration="0:0:1.2"/>
+        </Storyboard>
+        <Storyboard x:Key="GlowPulse" RepeatBehavior="Forever" AutoReverse="True">
+            <DoubleAnimation Storyboard.TargetName="WaterFlow"
+                           Storyboard.TargetProperty="Effect.Opacity"
+                           From="0.6" To="1" Duration="0:0:1"/>
+        </Storyboard>
+    </UserControl.Resources>
+    <Grid>
+        <Border CornerRadius="4" BorderThickness="0" Background="{StaticResource PipeOuterBrush}">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="2" Opacity="0.5"/>
+            </Border.Effect>
+        </Border>
+        <Border Margin="3" CornerRadius="2" Background="{StaticResource PipeInnerBrush}"/>
+        <Border x:Name="WaterFlow" Margin="3" CornerRadius="2" Visibility="Collapsed">
+            <Border.Background>
+                <DrawingBrush TileMode="Tile" Viewport="0,0,60,1" ViewportUnits="Absolute" Stretch="None">
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <GeometryDrawing Brush="{StaticResource WaterFlowBrush}">
+                                <GeometryDrawing.Geometry>
+                                    <RectangleGeometry Rect="0,0,30,1"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#00FFFF">
+                                <GeometryDrawing.Geometry>
+                                    <RectangleGeometry Rect="30,0,30,1"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                    <DrawingBrush.Transform>
+                        <TranslateTransform x:Name="FlowPatternTransform" X="0"/>
+                    </DrawingBrush.Transform>
+                </DrawingBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect x:Name="GlowEffectElement" Color="#00D4FF" BlurRadius="10" ShadowDepth="0" Opacity="0.7"/>
+            </Border.Effect>
+        </Border>
+        <Border Margin="4,4,4,15" CornerRadius="2" Background="{StaticResource GlossBrush}" Opacity="0.2"/>
+        <Border Margin="3" CornerRadius="2" BorderBrush="#88FFFFFF" BorderThickness="1" Opacity="0.3"/>
+    </Grid>
+</UserControl>
+'''
+
+# VerticalPipe.xaml
+vertical_pipe_xaml = '''<UserControl x:Class="Platform_Control.Controls.Pipeline.VerticalPipe"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             MinWidth="30" MinHeight="100"
+             ClipToBounds="True">
+    <UserControl.Resources>
+        <LinearGradientBrush x:Key="PipeOuterBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Offset="0" Color="#5A5A5E"/>
+            <GradientStop Offset="0.3" Color="#4A4A4E"/>
+            <GradientStop Offset="0.7" Color="#3A3A3E"/>
+            <GradientStop Offset="1" Color="#2A2A2E"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="PipeInnerBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Offset="0" Color="#1A1A2E"/>
+            <GradientStop Offset="0.5" Color="#16213E"/>
+            <GradientStop Offset="1" Color="#0F3460"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="WaterFlowBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Offset="0" Color="#00D4FF"/>
+            <GradientStop Offset="0.25" Color="#0099FF"/>
+            <GradientStop Offset="0.5" Color="#00D4FF"/>
+            <GradientStop Offset="0.75" Color="#0066CC"/>
+            <GradientStop Offset="1" Color="#00D4FF"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="GlossBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Offset="0" Color="#FFFFFF"/>
+            <GradientStop Offset="0.4" Color="#FFFFFF"/>
+            <GradientStop Offset="0.5" Color="Transparent"/>
+            <GradientStop Offset="1" Color="Transparent"/>
+        </LinearGradientBrush>
+        <Storyboard x:Key="FlowAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetName="FlowPatternTransform"
+                           Storyboard.TargetProperty="Y"
+                           From="0" To="60" Duration="0:0:1.2"/>
+        </Storyboard>
+    </UserControl.Resources>
+    <Grid>
+        <Border CornerRadius="4" BorderThickness="0" Background="{StaticResource PipeOuterBrush}">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="2" Opacity="0.5"/>
+            </Border.Effect>
+        </Border>
+        <Border Margin="3" CornerRadius="2" Background="{StaticResource PipeInnerBrush}"/>
+        <Border x:Name="WaterFlow" Margin="3" CornerRadius="2" Visibility="Collapsed">
+            <Border.Background>
+                <DrawingBrush TileMode="Tile" Viewport="0,0,1,60" ViewportUnits="Absolute" Stretch="None">
+                    <DrawingBrush.Drawing>
+                        <DrawingGroup>
+                            <GeometryDrawing Brush="{StaticResource WaterFlowBrush}">
+                                <GeometryDrawing.Geometry>
+                                    <RectangleGeometry Rect="0,0,1,30"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                            <GeometryDrawing Brush="#00FFFF">
+                                <GeometryDrawing.Geometry>
+                                    <RectangleGeometry Rect="0,30,1,30"/>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                        </DrawingGroup>
+                    </DrawingBrush.Drawing>
+                    <DrawingBrush.Transform>
+                        <TranslateTransform x:Name="FlowPatternTransform" Y="0"/>
+                    </DrawingBrush.Transform>
+                </DrawingBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect Color="#00D4FF" BlurRadius="10" ShadowDepth="0" Opacity="0.7"/>
+            </Border.Effect>
+        </Border>
+        <Border Margin="4,4,15,4" CornerRadius="2" Background="{StaticResource GlossBrush}" Opacity="0.2"/>
+        <Border Margin="3" CornerRadius="2" BorderBrush="#88FFFFFF" BorderThickness="1" Opacity="0.3"/>
+    </Grid>
+</UserControl>
+'''
+
+# ValveControl.xaml
+valve_control_xaml = '''<UserControl x:Class="Platform_Control.Controls.Pipeline.ValveControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             mc:Ignorable="d"
+             MinWidth="60" MinHeight="80">
+    <UserControl.Resources>
+        <RadialGradientBrush x:Key="HandWheelBrush" Center="0.5,0.5" GradientOrigin="0.3,0.3">
+            <GradientStop Offset="0" Color="#6A6A6E"/>
+            <GradientStop Offset="0.5" Color="#5A5A5E"/>
+            <GradientStop Offset="0.8" Color="#4A4A4E"/>
+            <GradientStop Offset="1" Color="#3A3A3E"/>
+        </RadialGradientBrush>
+        <RadialGradientBrush x:Key="HandWheelGlossBrush" Center="0.5,0.5" GradientOrigin="0.4,0.3">
+            <GradientStop Offset="0" Color="#FFFFFF"/>
+            <GradientStop Offset="0.3" Color="#FFFFFF" Opacity="0.3"/>
+            <GradientStop Offset="1" Color="Transparent"/>
+        </RadialGradientBrush>
+        <LinearGradientBrush x:Key="ValveStemBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Offset="0" Color="#5A5A5E"/>
+            <GradientStop Offset="0.5" Color="#6A6A6E"/>
+            <GradientStop Offset="1" Color="#4A4A4E"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="ValveBodyBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Offset="0" Color="#5A5A5E"/>
+            <GradientStop Offset="0.5" Color="#4A4A4E"/>
+            <GradientStop Offset="1" Color="#3A3A3E"/>
+        </LinearGradientBrush>
+        <RadialGradientBrush x:Key="OpenBrush" Center="0.5,0.5">
+            <GradientStop Offset="0" Color="#66CC66"/>
+            <GradientStop Offset="0.7" Color="#4CAF50"/>
+            <GradientStop Offset="1" Color="#388E3C"/>
+        </RadialGradientBrush>
+        <RadialGradientBrush x:Key="ClosedBrush" Center="0.5,0.5">
+            <GradientStop Offset="0" Color="#FF6666"/>
+            <GradientStop Offset="0.7" Color="#F44336"/>
+            <GradientStop Offset="1" Color="#D32F2F"/>
+        </RadialGradientBrush>
+        <DropShadowEffect x:Key="GlowGreen" Color="#4CAF50" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+        <DropShadowEffect x:Key="GlowRed" Color="#F44336" BlurRadius="15" ShadowDepth="0" Opacity="0.8"/>
+        <DropShadowEffect x:Key="ValveShadow" Color="#000000" BlurRadius="10" ShadowDepth="3" Opacity="0.6"/>
+        <Storyboard x:Key="RotateWheelOpen">
+            <DoubleAnimation Storyboard.TargetName="WheelRotateTransform"
+                           Storyboard.TargetProperty="Angle"
+                           To="90" Duration="0:0:0.5">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+        <Storyboard x:Key="RotateWheelClose">
+            <DoubleAnimation Storyboard.TargetName="WheelRotateTransform"
+                           Storyboard.TargetProperty="Angle"
+                           To="0" Duration="0:0:0.5">
+                <DoubleAnimation.EasingFunction>
+                    <BackEase EasingMode="EaseInOut"/>
+                </DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+        </Storyboard>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" HorizontalAlignment="Center" Margin="0,0,0,2">
+            <Grid.Effect>
+                <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="2" Opacity="0.5"/>
+            </Grid.Effect>
+            <Ellipse Width="45" Height="45" Stroke="#2A2A2E" StrokeThickness="2">
+                <Ellipse.Fill>
+                    <RadialGradientBrush Center="0.5,0.5" GradientOrigin="0.3,0.3">
+                        <GradientStop Offset="0" Color="#7A7A7E"/>
+                        <GradientStop Offset="0.5" Color="#6A6A6E"/>
+                        <GradientStop Offset="1" Color="#4A4A4E"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="38" Height="38" Stroke="#3A3A3E" StrokeThickness="1">
+                <Ellipse.Fill>
+                    <RadialGradientBrush Center="0.5,0.5" GradientOrigin="0.3,0.3">
+                        <GradientStop Offset="0" Color="#8A8A8E"/>
+                        <GradientStop Offset="0.7" Color="#5A5A5E"/>
+                        <GradientStop Offset="1" Color="#4A4A4E"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Grid RenderTransformOrigin="0.5,0.5">
+                <Grid.RenderTransform>
+                    <RotateTransform x:Name="WheelRotateTransform" Angle="0"/>
+                </Grid.RenderTransform>
+                <Line X1="22" Y1="8" X2="22" Y2="14" Stroke="#3A3A3E" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Line X1="22" Y1="30" X2="22" Y2="36" Stroke="#3A3A3E" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Line X1="8" Y1="22" X2="14" Y2="22" Stroke="#3A3A3E" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Line X1="30" Y1="22" X2="36" Y2="22" Stroke="#3A3A3E" StrokeThickness="3" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Line X1="12" Y1="12" X2="16" Y2="16" Stroke="#3A3A3E" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Line X1="28" Y1="28" X2="32" Y2="32" Stroke="#3A3A3E" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Line X1="12" Y1="32" X2="16" Y2="28" Stroke="#3A3A3E" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Line X1="28" Y1="16" X2="32" Y2="12" Stroke="#3A3A3E" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+                <Ellipse Width="12" Height="12" Stroke="#3A3A3E" StrokeThickness="1">
+                    <Ellipse.Fill>
+                        <RadialGradientBrush Center="0.5,0.5" GradientOrigin="0.4,0.4">
+                            <GradientStop Offset="0" Color="#9A9A9E"/>
+                            <GradientStop Offset="1" Color="#5A5A5E"/>
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+                </Ellipse>
+                <Ellipse Width="4" Height="4" Fill="#3A3A3E"/>
+            </Grid>
+            <Ellipse Width="45" Height="45">
+                <Ellipse.Fill>
+                    <RadialGradientBrush Center="0.5,0.5" GradientOrigin="0.4,0.3">
+                        <GradientStop Offset="0" Color="#FFFFFF" Opacity="0.4"/>
+                        <GradientStop Offset="0.5" Color="#FFFFFF" Opacity="0.1"/>
+                        <GradientStop Offset="1" Color="Transparent"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Grid>
+        <Rectangle Grid.Row="1" Width="8" Height="18" HorizontalAlignment="Center" Fill="{StaticResource ValveStemBrush}">
+            <Rectangle.Effect>
+                <DropShadowEffect Color="#000000" BlurRadius="4" ShadowDepth="1" Opacity="0.4"/>
+            </Rectangle.Effect>
+        </Rectangle>
+        <Rectangle Grid.Row="1" Width="2" Height="18" HorizontalAlignment="Center" Margin="-3,0,0,0" Fill="#FFFFFF" Opacity="0.3"/>
+        <Grid Grid.Row="2" HorizontalAlignment="Center">
+            <Grid.Effect>
+                <DropShadowEffect Color="#000000" BlurRadius="8" ShadowDepth="2" Opacity="0.5"/>
+            </Grid.Effect>
+            <Path Data="M 0,15 L 15,0 L 30,15 L 15,30 Z" Stroke="#2A2A2E" StrokeThickness="2">
+                <Path.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Offset="0" Color="#6A6A6E"/>
+                        <GradientStop Offset="0.5" Color="#5A5A5E"/>
+                        <GradientStop Offset="1" Color="#4A4A4E"/>
+                    </LinearGradientBrush>
+                </Path.Fill>
+            </Path>
+            <Path Data="M 3,15 L 15,3 L 27,15 L 15,27 Z" Stroke="#3A3A3E" StrokeThickness="1">
+                <Path.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                        <GradientStop Offset="0" Color="#4A4A4E"/>
+                        <GradientStop Offset="1" Color="#3A3A3E"/>
+                    </LinearGradientBrush>
+                </Path.Fill>
+            </Path>
+            <Ellipse Width="12" Height="12" Fill="{Binding StatusColor, RelativeSource={RelativeSource AncestorType=UserControl}}" HorizontalAlignment="Center" Margin="0,10,0,0">
+                <Ellipse.Effect>
+                    <DropShadowEffect x:Name="StatusGlow" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/>
+                </Ellipse.Effect>
+            </Ellipse>
+            <Ellipse Width="8" Height="8" HorizontalAlignment="Center" Margin="0,8,0,0" Fill="#FFFFFF" Opacity="0.3"/>
+            <Path Data="M 2,15 L 15,2 L 28,15 L 15,28 Z" Opacity="0.2">
+                <Path.Fill>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                        <GradientStop Offset="0" Color="#FFFFFF"/>
+                        <GradientStop Offset="0.5" Color="Transparent"/>
+                    </LinearGradientBrush>
+                </Path.Fill>
+            </Path>
+        </Grid>
+    </Grid>
+</UserControl>
+'''
+
+base_dir = r'd:\Hcy\项目\平台domo\Platform-Control\Platform-Control'
+
+files = {
+    os.path.join(base_dir, 'Controls', 'Pipeline', 'HorizontalPipe.xaml'): horizontal_pipe_xaml,
+    os.path.join(base_dir, 'Controls', 'Pipeline', 'VerticalPipe.xaml'): vertical_pipe_xaml,
+    os.path.join(base_dir, 'Controls', 'Pipeline', 'ValveControl.xaml'): valve_control_xaml,
+}
+
+for path, content in files.items():
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f'Written: {path}')
+
+print('Done!')
